@@ -6,6 +6,7 @@
 <div
   class="box is-sideless has-background-white-bis has-text-grey-light has-text-centered has-tall-padding"
   data-test-page-error
+  {{did-update this.unpackError @error}}
 >
   {{#if (eq this.error.httpStatus 404)}}
     <h1 class="title is-3 has-text-grey-light" data-test-page-error-title={{this.error.httpStatus}}>

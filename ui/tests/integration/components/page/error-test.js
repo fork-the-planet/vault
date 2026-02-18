@@ -41,6 +41,26 @@ module('Integration | Component | page/error', function (hooks) {
       .hasText(`You are not authorized to access content at ${this.error.path}.`, 'Error message renders');
   });
 
+  test('it updates when error arg changes', async function (assert) {
+    this.error = { httpStatus: 403, path: '/v1/kubernetes/config' };
+    await render(hbs`<Page::Error @error={{this.error}} />`);
+
+    assert
+      .dom('p')
+      .hasText(
+        'You are not authorized to access content at /v1/kubernetes/config.',
+        'Initial message renders'
+      );
+    // Change error arg using "set" to trigger reactivity
+    this.set('error', { httpStatus: 403, path: '/v1/kubernetes/roles' });
+    assert
+      .dom('p')
+      .hasText(
+        'You are not authorized to access content at /v1/kubernetes/roles.',
+        'Updated message renders'
+      );
+  });
+
   test('it should render general error', async function (assert) {
     this.error = {
       message: 'An unexpected error occurred',

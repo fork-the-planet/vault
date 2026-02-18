@@ -7,6 +7,7 @@ import Component from '@glimmer/component';
 import { service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 import { ResponseError } from '@hashicorp/vault-client-typescript';
+import { action } from '@ember/object';
 
 import type Owner from '@ember/owner';
 import type ApiService from 'vault/services/api';
@@ -32,6 +33,7 @@ export default class PageErrorComponent extends Component<Args> {
     this.unpackError();
   }
 
+  @action
   async unpackError() {
     if (this.args.error instanceof ResponseError) {
       const { status, path, response } = await this.api.parseError(this.args.error);

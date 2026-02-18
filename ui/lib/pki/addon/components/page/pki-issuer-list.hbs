@@ -64,7 +64,7 @@
               <Icon @name="certificate" class="has-text-grey-light" />
               <span class="has-text-weight-semibold is-underline">
                 {{or issuer.issuer_name issuer.issuer_id}}
-                {{#if issuer.issuer_name}}
+                {{#if (and issuer.issuer_id issuer.issuer_name)}}
                   <Hds::Badge @text={{issuer.issuer_id}} />
                 {{/if}}
               </span>
