@@ -58,7 +58,9 @@ func (b *SystemBackend) useCaseConsumptionBillingPaths() []*framework.Path {
 func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logical.Request, data *framework.FieldData) (*logical.Response, error) {
 	// Get HWM role counts
 	replicatedMaxRoleCounts := &RoleCounts{}
+	replicatedManagedKeyCounts := &ManagedKeyCounts{}
 	replicatedKvHWMCounts := 0
+	replicatedTotpHWMCounts := 0
 	var err error
 	currentMonth := time.Now()
 	previousMonth := timeutil.StartOfPreviousMonth(currentMonth)
@@ -66,26 +68,28 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 	// If we are the primary, then we want to get the replicated max role counts. Else we shouldn't retrieve them.
 	if b.Core.isPrimary() {
 		// We use update instead of Get so that the counts are up to date.
-		replicatedMaxRoleCounts, err = b.Core.UpdateMaxRoleCounts(ctx, billing.ReplicatedPrefix, currentMonth)
+		replicatedMaxRoleCounts, replicatedManagedKeyCounts, err = b.Core.UpdateMaxRoleAndManagedKeyCounts(ctx, billing.ReplicatedPrefix, currentMonth)
 		if err != nil {
-			return nil, fmt.Errorf("error retrieving replicated max role counts: %w", err)
+			return nil, fmt.Errorf("error retrieving replicated max role and managed key counts: %w", err)
 		}
 		replicatedKvHWMCounts, err = b.Core.UpdateMaxKvCounts(ctx, billing.ReplicatedPrefix, currentMonth)
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving replicated max kv counts: %w", err)
 		}
+		replicatedTotpHWMCounts = replicatedManagedKeyCounts.TotpKeys
 	}
 
 	// We always want to get the local max role counts
 	// We use update instead of Get so that the counts are up to date.
-	localMaxRoleCounts, err := b.Core.UpdateMaxRoleCounts(ctx, billing.LocalPrefix, currentMonth)
+	localMaxRoleCounts, localMaxManagedKeyCounts, err := b.Core.UpdateMaxRoleAndManagedKeyCounts(ctx, billing.LocalPrefix, currentMonth)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving local max role counts: %w", err)
+		return nil, fmt.Errorf("error retrieving local max role and managed key counts: %w", err)
 	}
 	localKvHWMCounts, err := b.Core.UpdateMaxKvCounts(ctx, billing.LocalPrefix, currentMonth)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving local max kv counts: %w", err)
 	}
+	localTotpHWMCounts := localMaxManagedKeyCounts.TotpKeys
 
 	// Data protection call counts are stored to local path only
 	// Each cluster tracks its own total requests to avoid double counting
@@ -102,6 +106,7 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 	// max role counts. replicatedMaxRoleCounts will be empty if we are not a primary, so this is taken care of for us.
 	combinedMaxRoleCounts := combineRoleCounts(replicatedMaxRoleCounts, localMaxRoleCounts)
 	combinedMaxKvCounts := replicatedKvHWMCounts + localKvHWMCounts
+	combinedMaxTotpCounts := replicatedTotpHWMCounts + localTotpHWMCounts
 	// Data protection counts are not combined - each cluster reports its own total
 	combinedMaxDataProtectionCallCounts := map[string]interface{}{
 		"transit":   localTransitCallCounts,
@@ -110,6 +115,7 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 
 	var replicatedPreviousMonthRoleCounts *RoleCounts
 	replicatedPreviousMonthKvHWMCounts := 0
+	replicatedPreviousMonthTotpHWMCounts := 0
 	if b.Core.isPrimary() {
 		replicatedPreviousMonthRoleCounts, err = b.Core.GetStoredHWMRoleCounts(ctx, billing.ReplicatedPrefix, previousMonth)
 		if err != nil {
@@ -119,6 +125,10 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 		if err != nil {
 			return nil, fmt.Errorf("error retrieving replicated max kv counts for previous month: %w", err)
 		}
+		replicatedPreviousMonthTotpHWMCounts, err = b.Core.GetStoredHWMTotpCounts(ctx, billing.ReplicatedPrefix, previousMonth)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving replicated max totp key for previous month: %w", err)
+		}
 	}
 	localPreviousMonthRoleCounts, err := b.Core.GetStoredHWMRoleCounts(ctx, billing.LocalPrefix, previousMonth)
 	if err != nil {
@@ -127,6 +137,10 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 	localPreviousMonthKvHWMCounts, err := b.Core.GetStoredHWMKvCounts(ctx, billing.LocalPrefix, previousMonth)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving local max kv counts for previous month: %w", err)
+	}
+	localPreviousMonthTotpHWMCounts, err := b.Core.GetStoredHWMTotpCounts(ctx, billing.LocalPrefix, previousMonth)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving local max totp key for previous month: %w", err)
 	}
 
 	// Data protection counts for previous month
@@ -141,6 +155,8 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 
 	combinedPreviousMonthRoleCounts := combineRoleCounts(replicatedPreviousMonthRoleCounts, localPreviousMonthRoleCounts)
 	combinedPreviousMonthKvHWMCounts := replicatedPreviousMonthKvHWMCounts + localPreviousMonthKvHWMCounts
+	combinedPreviousMonthTotpHWMCounts := replicatedPreviousMonthTotpHWMCounts + localPreviousMonthTotpHWMCounts
+
 	// Data protection counts are not combined - each cluster reports its own total
 	combinedPreviousMonthDataProtectionCallCounts := map[string]interface{}{
 		"transit":   localPreviousMonthTransitCallCounts,
@@ -152,12 +168,14 @@ func (b *SystemBackend) handleUseCaseConsumption(ctx context.Context, req *logic
 			"timestamp":                   timeutil.StartOfMonth(currentMonth),
 			"maximum_role_counts":         combinedMaxRoleCounts,
 			"maximum_kv_counts":           combinedMaxKvCounts,
+			"maximum_totp_counts":         combinedMaxTotpCounts,
 			"data_protection_call_counts": combinedMaxDataProtectionCallCounts,
 		},
 		"previous_month": map[string]interface{}{
 			"timestamp":                   previousMonth,
 			"maximum_role_counts":         combinedPreviousMonthRoleCounts,
 			"maximum_kv_counts":           combinedPreviousMonthKvHWMCounts,
+			"maximum_totp_counts":         combinedPreviousMonthTotpHWMCounts,
 			"data_protection_call_counts": combinedPreviousMonthDataProtectionCallCounts,
 		},
 	}
