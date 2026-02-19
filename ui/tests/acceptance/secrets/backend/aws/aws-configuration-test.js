@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: BUSL-1.1
  */
 
-import { click, fillIn, visit, currentURL } from '@ember/test-helpers';
+import { click, fillIn, visit, currentURL, currentRouteName } from '@ember/test-helpers';
 import { module, test } from 'qunit';
 import { setupApplicationTest } from 'ember-qunit';
 import { v4 as uuidv4 } from 'uuid';
@@ -86,8 +86,19 @@ module('Acceptance | aws | configuration', function (hooks) {
       await enablePage.enable('aws', path);
       await click(GENERAL.dropdownToggle('Manage'));
       await click(GENERAL.menuItem('Configure'));
+      assert.strictEqual(
+        currentRouteName(),
+        'vault.cluster.secrets.backend.configuration.edit',
+        'dropdown navigates to new route'
+      );
+      // directly navigate to old URL
       await visit(`/vault/settings/secrets/configure/${path}`);
-      assert.dom(GENERAL.notFound).exists('shows page-error');
+      assert.dom(GENERAL.pageError.title(404)).hasText('404 Not Found');
+      assert
+        .dom(GENERAL.pageError.message)
+        .hasText(
+          `Sorry, we were unable to find any content at settings/secrets/configure/${path}. Double check the url or go back home.`
+        );
       // cleanup
       await runCmd(`delete sys/mounts/${path}`);
     });

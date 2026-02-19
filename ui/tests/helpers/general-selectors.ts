@@ -148,16 +148,15 @@ export const GENERAL = {
   inlineError: '[data-test-inline-error-message]',
   messageError: '[data-test-message-error]',
   messageDescription: '[data-test-message-error-description]',
-  notFound: '[data-test-not-found]',
   validationErrorByAttr: (attr: string) => `[data-test-validation-error=${attr}]`,
   validationWarningByAttr: (attr: string) => `[data-test-validation-warning=${attr}]`,
 
   pageError: {
     error: '[data-test-page-error]',
-    errorTitle: (httpStatus: number) => `[data-test-page-error-title="${httpStatus}"]`,
-    errorSubtitle: '[data-test-page-error-subtitle]',
-    errorMessage: '[data-test-page-error-message]',
-    errorDetails: '[data-test-page-error-details]',
+    title: (httpStatus?: number) =>
+      httpStatus ? `[data-test-page-error-title="${httpStatus}"]` : '[data-test-page-error-title]',
+    message: '[data-test-page-error-message]',
+    details: '[data-test-page-error-details]',
   },
 
   /* ────── Pagination ────── */

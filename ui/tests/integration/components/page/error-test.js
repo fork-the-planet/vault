@@ -35,7 +35,7 @@ module('Integration | Component | page/error', function (hooks) {
 
     await render(hbs`<Page::Error @error={{this.error}} />`);
 
-    assert.dom('h1').hasText('Not authorized', 'Error title renders');
+    assert.dom('h1').hasText('403 Not Authorized', 'Error title renders');
     assert
       .dom('p')
       .hasText(`You are not authorized to access content at ${this.error.path}.`, 'Error message renders');
@@ -84,22 +84,19 @@ module('Integration | Component | page/error', function (hooks) {
     await render(hbs`<Page::Error @error={{this.error}} />`);
 
     assert
-      .dom(GENERAL.pageError.errorTitle('404'))
+      .dom(GENERAL.pageError.title('404'))
       .hasText('404 Not Found', 'Error title renders based on status');
     assert
-      .dom(GENERAL.pageError.errorSubtitle)
-      .hasText(
-        'Sorry, we were unable to find any content at /v1/test/error/parsing.',
-        'Error subtitle renders'
-      );
+      .dom(GENERAL.pageError.message)
+      .hasText('Sorry, we were unable to find any content at /v1/test/error/parsing.');
 
     const error = { errors: ['something bad happened'], message: 'bad things occurred' };
     this.error = getErrorResponse(error, 400);
 
     await render(hbs`<Page::Error @error={{this.error}} />`);
 
-    assert.dom(GENERAL.pageError.errorTitle('400')).hasText('Error', 'Error title renders');
-    assert.dom(GENERAL.pageError.errorMessage).hasText(error.message, 'Error message renders');
-    assert.dom(GENERAL.pageError.errorDetails).hasText(error.errors[0], 'Error details render');
+    assert.dom(GENERAL.pageError.title('400')).hasText('400 Error', 'Error title renders');
+    assert.dom(GENERAL.pageError.message).hasText(error.message, 'Error message renders');
+    assert.dom(GENERAL.pageError.details).hasText(error.errors[0], 'Error details render');
   });
 });
