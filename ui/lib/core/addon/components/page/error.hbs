@@ -30,4 +30,8 @@
       {{/each}}
     </div>
   {{/if}}
+
+  {{#if (has-block "customFooter")}}
+    {{yield to="customFooter"}}
+  {{/if}}
 </div>
