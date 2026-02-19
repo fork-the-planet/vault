@@ -144,6 +144,7 @@ export const GENERAL = {
   flashMessage: '[data-test-flash-message]',
   latestFlashContent: '[data-test-flash-message]:last-of-type [data-test-flash-message-body]',
   inlineAlert: '[data-test-inline-alert]',
+  inlineAlertByAttr: (attr: string) => `[data-test-inline-alert="${attr}"]`,
   inlineError: '[data-test-inline-error-message]',
   messageError: '[data-test-message-error]',
   messageDescription: '[data-test-message-error-description]',
