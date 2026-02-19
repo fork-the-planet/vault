@@ -7,12 +7,12 @@ import { action } from '@ember/object';
 import Route from '@ember/routing/route';
 import { service } from '@ember/service';
 import { getPluginVersionsFromEngineType } from 'vault/utils/plugin-catalog-helpers';
+import SecretsEngineResource from 'vault/resources/secrets/engine';
 
 import type Controller from '@ember/controller';
 import type RouterService from '@ember/routing/router-service';
 import type Transition from '@ember/routing/transition';
 import type SecretEngineModel from 'vault/models/secret-engine';
-import type SecretsEngineResource from 'vault/resources/secrets/engine';
 import type ApiService from 'vault/services/api';
 import type PluginCatalogService from 'vault/services/plugin-catalog';
 import type UnsavedChangesService from 'vault/services/unsaved-changes';
@@ -36,12 +36,13 @@ export default class SecretsBackendConfigurationGeneralSettingsRoute extends Rou
   @service declare readonly unsavedChanges: UnsavedChangesService;
 
   async model() {
-    const secretsEngine = this.modelFor('vault.cluster.secrets.backend') as SecretsEngineResource;
+    const { backend } = this.paramsFor('vault.cluster.secrets.backend') as Record<string, unknown>;
+    const response = await this.api.sys.internalUiReadMountInformation(backend as string);
+    const secretsEngine = new SecretsEngineResource({
+      ...(response as SecretsEngineResource),
+      path: `${backend}/`,
+    });
     const { data } = await this.pluginCatalog.getRawPluginCatalogData();
-    const { config } = this.modelFor('vault.cluster.secrets.backend.configuration') as Record<
-      string,
-      unknown
-    >;
     const versions = getPluginVersionsFromEngineType(data?.secret, secretsEngine.type);
 
     // Fetch version data (pinned, current, and running versions)
@@ -66,7 +67,7 @@ export default class SecretsBackendConfigurationGeneralSettingsRoute extends Rou
     const model = { secretsEngine, versions, pinnedVersion: pinnedVersionString };
     this.unsavedChanges.initialState = JSON.parse(JSON.stringify(model.secretsEngine));
 
-    return { secretsEngine, versions, config, pinnedVersion: pinnedVersionString };
+    return { secretsEngine, versions, pinnedVersion: pinnedVersionString };
   }
 
   setupController(controller: RouteController, resolvedModel: RouteModel, transition: Transition) {
