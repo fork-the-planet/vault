@@ -180,6 +180,7 @@ func (c *Core) updateBillingMetrics(ctx context.Context, currentMonth time.Time)
 			c.logger.Info("updated cluster data protection call counts", "prefix", billing.LocalPrefix, "currentMonth", currentMonth)
 		}
 
+		c.consumptionBilling.LastMetricsUpdate.Store(time.Now().UTC())
 	}
 	return nil
 }

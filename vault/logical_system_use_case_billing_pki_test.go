@@ -20,7 +20,7 @@ func TestGeneratePkiBillingMetric(t *testing.T) {
 	currentMonth := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
 
 	t.Run("returns zero count when no data exists", func(t *testing.T) {
-		overview, err := backend.generatePkiBillingMetric(ctx, currentMonth)
+		overview, err := backend.buildPkiBillingMetric(ctx, currentMonth)
 		require.NoError(t, err)
 		require.NotNil(t, overview)
 
@@ -43,7 +43,7 @@ func TestGeneratePkiBillingMetric(t *testing.T) {
 		require.NoError(t, err)
 
 		// Generate overview
-		overview, err := backend.generatePkiBillingMetric(ctx, month)
+		overview, err := backend.buildPkiBillingMetric(ctx, month)
 		require.NoError(t, err)
 		require.NotNil(t, overview)
 
@@ -72,13 +72,13 @@ func TestGeneratePkiBillingMetric(t *testing.T) {
 		require.NoError(t, err)
 
 		// Generate overview for month1
-		overview1, err := backend.generatePkiBillingMetric(ctx, month1)
+		overview1, err := backend.buildPkiBillingMetric(ctx, month1)
 		require.NoError(t, err)
 		metricData1 := overview1["metric_data"].(map[string]interface{})
 		require.Equal(t, count1, metricData1["total"])
 
 		// Generate overview for month2
-		overview2, err := backend.generatePkiBillingMetric(ctx, month2)
+		overview2, err := backend.buildPkiBillingMetric(ctx, month2)
 		require.NoError(t, err)
 		metricData2 := overview2["metric_data"].(map[string]interface{})
 		require.Equal(t, count2, metricData2["total"])
@@ -87,7 +87,7 @@ func TestGeneratePkiBillingMetric(t *testing.T) {
 	t.Run("uses constant for metric name", func(t *testing.T) {
 		month := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
 
-		overview, err := backend.generatePkiBillingMetric(ctx, month)
+		overview, err := backend.buildPkiBillingMetric(ctx, month)
 		require.NoError(t, err)
 
 		// Verify it uses the constant pkiDurationAjustedCountMetricName
