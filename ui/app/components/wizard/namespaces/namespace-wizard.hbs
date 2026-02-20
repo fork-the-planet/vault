@@ -51,7 +51,7 @@
     {{#if (eq this.wizardState.securityPolicyChoice this.policy.FLEXIBLE)}}
       <Hds::Button @text="Done" {{on "click" this.onDismiss}} data-test-button="Done" />
     {{else if (eq this.wizardState.creationMethod this.methods.UI)}}
-      <Hds::Button @text="Apply" {{on "click" this.onSubmit}} data-test-button="Apply" />
+      <Hds::Button @text="Apply in UI" {{on "click" this.onSubmit}} data-test-button="Apply" />
     {{else}}
       <Hds::Copy::Button
         @text="Copy code"

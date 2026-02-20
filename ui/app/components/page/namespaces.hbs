@@ -135,32 +135,30 @@
         </Hds::Alert>
       {{/if}}
 
-      <Hds::Card::Container @hasBorder={{true}} class="has-padding-l top-margin-32">
-        <Hds::ApplicationState @align="left" class="is-marginless" as |A|>
-          <A.Header
-            @title="No namespaces yet"
-            @titleTag="h2"
-            @icon="skip"
-            class="align-items-end"
-            data-test-empty-state-title
+      <Hds::ApplicationState @align="center" class="top-padding-32" as |A|>
+        <A.Header
+          @title="No namespaces yet"
+          @titleTag="h2"
+          @icon="skip"
+          class="align-items-end"
+          data-test-empty-state-title
+        />
+        <A.Body @text="Your namespaces will be listed here. Add a namespace to get started." />
+        <A.Footer as |F|>
+          <F.Button
+            @color="secondary"
+            @icon="reload"
+            @text="Refresh"
+            {{on "click" this.refreshNamespaceList}}
+            data-test-button="refresh-namespace-list"
           />
-          <A.Body @text="Your namespaces will be listed here. Add a namespace to get started." />
-          <A.Footer as |F|>
-            <F.Button
-              @color="secondary"
-              @icon="reload"
-              @text="Refresh"
-              {{on "click" this.refreshNamespaceList}}
-              data-test-button="refresh-namespace-list"
-            />
-            <F.LinkStandalone
-              @icon="learn-link"
-              @text="Secure multi-tenancy with namespaces tutorial"
-              @href={{doc-link "/vault/tutorials/enterprise/namespaces"}}
-            />
-          </A.Footer>
-        </Hds::ApplicationState>
-      </Hds::Card::Container>
+          <F.LinkStandalone
+            @icon="learn-link"
+            @text="Secure multi-tenancy with namespaces tutorial"
+            @href={{doc-link "/vault/tutorials/enterprise/namespaces"}}
+          />
+        </A.Footer>
+      </Hds::ApplicationState>
     {{/if}}
 
   {{/if}}
