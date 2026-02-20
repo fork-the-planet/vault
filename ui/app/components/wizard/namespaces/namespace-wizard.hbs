@@ -7,7 +7,7 @@
   @wizardId={{this.wizardId}}
   @canProceed={{this.canProceed}}
   @currentStep={{this.currentStep}}
-  @isModal={{@this.isIntroModal}}
+  @isModal={{@isIntroModal}}
   @steps={{this.steps}}
   @title="Namespaces"
   @wizardState={{this.wizardState}}
@@ -26,7 +26,12 @@
         {{on "click" (fn this.onIntroChange false)}}
         data-test-button="Guided start"
       />
-      <Hds::Button @color="secondary" @text="Skip" {{on "click" this.onDismiss}} data-test-button="Skip" />
+      <Hds::Button
+        @color="secondary"
+        @text={{if @isIntroModal "Close" "Skip"}}
+        {{on "click" this.onDismiss}}
+        data-test-button="Skip"
+      />
       <Hds::Link::Standalone
         @icon="docs-link"
         @iconPosition="trailing"
@@ -46,7 +51,7 @@
     {{#if (eq this.wizardState.securityPolicyChoice this.policy.FLEXIBLE)}}
       <Hds::Button @text="Done" {{on "click" this.onDismiss}} data-test-button="Done" />
     {{else if (eq this.wizardState.creationMethod this.methods.UI)}}
-      <Hds::Button @text="Apply" {{on "click" this.onSubmit}} data-test-button="Apply" />
+      <Hds::Button @text="Apply in UI" {{on "click" this.onSubmit}} data-test-button="Apply" />
     {{else}}
       <Hds::Copy::Button
         @text="Copy code"

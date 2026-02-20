@@ -194,9 +194,9 @@ module('Acceptance | kv-v2 workflow | edge cases', function (hooks) {
       await visit(`/vault/secrets-engines/${backend}/kv/list`);
       await typeIn(PAGE.list.overviewInput, `${root}/${subdirectory}`); // intentionally leave out trailing slash
       await click(GENERAL.submitButton);
-      assert.dom(PAGE.error.title).hasText('404 Not Found');
+      assert.dom(GENERAL.pageError.title(404)).hasText('404 Not Found');
       assert
-        .dom(PAGE.error.message)
+        .dom(GENERAL.pageError.message)
         .hasText(
           `Sorry, we were unable to find any content at /v1/${backend}/metadata/${root}/${subdirectory}.`
         );

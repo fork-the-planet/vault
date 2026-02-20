@@ -31,7 +31,12 @@ module('Acceptance | ssh | configuration', function (hooks) {
     const sshPath = `ssh-${this.uid}`;
     await enablePage.enable('ssh', sshPath);
     await visit(`/vault/settings/secrets/configure/${sshPath}`);
-    assert.dom(GENERAL.notFound).exists('shows page-error');
+    assert.dom(GENERAL.pageError.title(404)).hasText('404 Not Found');
+    assert
+      .dom(GENERAL.pageError.message)
+      .hasText(
+        `Sorry, we were unable to find any content at settings/secrets/configure/${sshPath}. Double check the url or go back home.`
+      );
     // cleanup
     await runCmd(`delete sys/mounts/${sshPath}`);
   });

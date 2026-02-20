@@ -4,11 +4,13 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { BasePage } from '../../pages/base';
 
 test('kvv2 workflow', async ({ page }) => {
+  const basePage = new BasePage(page);
   await page.goto('dashboard');
   // enable kv secrets engine
-  await page.getByRole('link', { name: 'Secrets Engines' }).click();
+  await page.getByRole('link', { name: 'Secrets', exact: true }).click();
   await page.getByRole('link', { name: 'Enable new engine' }).click();
   await page.locator('div').filter({ hasText: 'KV' }).nth(4).click();
   await page.getByRole('textbox', { name: 'Path' }).click();
@@ -20,7 +22,7 @@ test('kvv2 workflow', async ({ page }) => {
     'No secrets yet When created, secrets will be listed here. Create a secret to get started.'
   );
   // verify that the kv engine appears in the list view
-  await page.getByRole('link', { name: 'Secrets Engines' }).click();
+  await page.getByLabel('Secrets Navigation Links').getByRole('link', { name: 'Secrets engines' }).click();
   await page.getByRole('link', { name: 'kv-test/' }).click();
   // create a secret
   await page.getByRole('link', { name: 'Create secret' }).click();
@@ -54,6 +56,8 @@ test('kvv2 workflow', async ({ page }) => {
   await page.getByRole('link', { name: 'Version History' }).click();
   await expect(page.locator('section')).toContainText('Version 1');
   await expect(page.locator('section')).toContainText('Current');
+  // there are a stack of flash messages that are blocking the manage version button from being clicked
+  await basePage.dismissFlashMessages();
   await page.getByRole('button', { name: 'Manage version' }).click();
   await page.getByRole('link', { name: 'Create new version from 1', exact: true }).click();
   await page.getByRole('textbox', { name: 'key' }).first().fill('bar-v2');

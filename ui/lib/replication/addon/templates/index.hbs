@@ -4,7 +4,7 @@
 }}
 
 <section class="section">
-  <div class="container is-widescreen">
+  <div class="is-widescreen">
     {{#if (eq this.model.mode "unsupported")}}
       {{! Replication is unsupported in non-enterprise or when using non-transactional storage (eg inmem) }}
       <Page::Header @title="Replication unsupported">

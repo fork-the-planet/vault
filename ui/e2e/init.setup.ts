@@ -41,7 +41,7 @@ setup('initialize vault and setup user for testing', async ({ page, userType }) 
   await page.getByRole('button', { name: 'Sign in' }).click();
   // create a policy for a specific user persona
   // defaults to superuser but should be passed in via the project config in playwright.config.ts
-  await page.getByRole('link', { name: 'Access', exact: true }).click();
+  await page.getByRole('link', { name: 'Access control', exact: true }).click();
   await page.getByRole('link', { name: 'Create ACL policy' }).click();
   await page.getByRole('textbox', { name: 'Policy name' }).fill(userType);
   await page.getByRole('radio', { name: 'Code editor' }).check();

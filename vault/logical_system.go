@@ -239,6 +239,7 @@ func NewSystemBackend(core *Core, logger log.Logger, config *logical.BackendConf
 	b.Backend.Paths = append(b.Backend.Paths, b.introspectionPaths()...)
 	b.Backend.Paths = append(b.Backend.Paths, b.wellKnownPaths()...)
 	b.Backend.Paths = append(b.Backend.Paths, b.activationFlagsPaths()...)
+	b.Backend.Paths = append(b.Backend.Paths, b.useCaseConsumptionBillingPaths()...)
 
 	if core.rawEnabled {
 		b.Backend.Paths = append(b.Backend.Paths, b.rawPaths()...)

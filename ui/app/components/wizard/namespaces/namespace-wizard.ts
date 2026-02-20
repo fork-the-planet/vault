@@ -36,6 +36,8 @@ interface WizardState {
   codeSnippet: string | null;
 }
 
+export const WIZARD_ID = 'namespace';
+
 export default class WizardNamespacesWizardComponent extends Component<Args> {
   @service declare readonly api: ApiService;
   @service declare readonly router: RouterService;
@@ -56,7 +58,7 @@ export default class WizardNamespacesWizardComponent extends Component<Args> {
   methods = CreationMethod;
   policy = SecurityPolicy;
 
-  wizardId = 'namespace';
+  wizardId = WIZARD_ID;
 
   // Whether the current step requirements have been met to proceed to the next step
   get canProceed() {
